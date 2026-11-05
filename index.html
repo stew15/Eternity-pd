@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Eternity Pixel Dungeon</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #000;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+            #canvas {
+                border: none;
+            }
+        </style>
+    <script>(function(){var g=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(t,o){var c=g.call(this,t,o);if(c&&(t==='webgl'||t==='experimental-webgl')&&c.getExtension){try{c.getExtension('OES_standard_derivatives');}catch(e){}}return c;};})();</script>
+<!-- EPD-PWA:BEGIN -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Eternity PD">
+<meta name="application-name" content="Eternity PD">
+<meta name="theme-color" content="#000000">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icons-pwa/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons-pwa/icon-192.png">
+<style>
+  html, body {
+    position: fixed; inset: 0; margin: 0; padding: 0;
+    width: 100vw; height: 100vh; height: 100dvh;
+    overflow: hidden; background: #000;
+    overscroll-behavior: none; touch-action: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  body { display: block !important; }
+  body > div { position: absolute; inset: 0; overflow: hidden; background: #000; }
+  #canvas {
+    position: absolute; left: 0; top: 0; display: block;
+    width: 100% !important; height: 100% !important;
+    border: none; outline: none; touch-action: none; background: #000;
+  }
+</style>
+<script>
+/* gdx-teavm (width/height 0 = auto-size) resizes the canvas to window.innerWidth/innerHeight on window
+   'resize' only. iOS (fold/unfold, rotation, toolbar changes) can change the viewport without a timely
+   window resize, so re-dispatch 'resize' whenever the canvas backbuffer no longer matches the window. */
+(function () {
+  function sync() {
+    var c = document.getElementById('canvas');
+    if (!c) return;
+    if (c.width !== window.innerWidth || c.height !== window.innerHeight) {
+      window.dispatchEvent(new Event('resize'));
+    }
+  }
+  function burst() {
+    requestAnimationFrame(sync);
+    [50, 150, 300, 600, 1000].forEach(function (t) { setTimeout(sync, t); });
+  }
+  window.addEventListener('orientationchange', burst);
+  window.addEventListener('resize', function () { setTimeout(sync, 100); });
+  window.addEventListener('pageshow', burst);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) burst(); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', burst);
+  if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', burst);
+  if (window.matchMedia) { try { matchMedia('(orientation: portrait)').addEventListener('change', burst); } catch (e) {} }
+  window.addEventListener('load', function () { burst(); setInterval(sync, 1000); });
+  /* no pinch/double-tap zoom or page bounce */
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+})();
+/* offline support */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function (e) { console.warn('SW registration failed', e); });
+  });
+}
+if (navigator.storage && navigator.storage.persist) {
+  window.addEventListener('load', function () {
+    navigator.storage.persisted().then(function (p) { return p || navigator.storage.persist(); })
+      .then(function (p) { window.__epdPersisted = p; }).catch(function () {});
+  });
+}
+</script>
+<!-- EPD-PWA:END -->
+</head>
+    <body oncontextmenu="return false">
+        <div>
+            <canvas id="canvas"></canvas>
+        </div>
+        <script>
+            async function start() {
+                main()
+            }
+            window.addEventListener("load", start);
+        </script>
+        <script type="text/javascript" charset="utf-8" src="app.js"></script>
+    </body>
+</html>
